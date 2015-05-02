@@ -3,23 +3,23 @@
 //Test data
 #define TESTS_COUNT 5
 #define MAX_STRING 255
-char test_in[TESTS_COUNT][MAX_STRING] = {"//c-style comment \n",
-		      "//c-style comment A\n//c-style comment B",
-		      "/*c++ style comment}*/\n",
+char test_in[TESTS_COUNT][MAX_STRING] = {"//cpp-style comment \n",
+		      "//cpp-style comment A\n//cpp-style comment B",
+		      "/*c style comment}*/\n",
 		      "No comments at all",
-		      "/*C++ // c comment*//* very hard * comment */\n"};
-char test_out[TESTS_COUNT][MAX_STRING] = {"                  \n",
-		      "                   \n                   ",
-		      "                      \n",
+		      "/*c // cpp\n comment*//* very hard * comment */\n"};
+char test_out[TESTS_COUNT][MAX_STRING] = {"                    \n",
+		      "                     \n                     ",
+		      "                    \n",
 		      "No comments at all",
-		      "                                             \n"};     
+		      "                                              \n"};     
 
 typedef enum CommentState_{
   None,
   SlashFound,
-  CStyle,
   CppStyle,
-  CppStyleEnd
+  CStyle,
+  CStyleEnd
 }CommentState;
 
 void remove_Comments(char *psz_str){
@@ -33,35 +33,35 @@ void remove_Comments(char *psz_str){
       break;
     case SlashFound:
       if(*psz_str == '/'){
-	commentState = CStyle;
+	commentState = CppStyle;
 	*psz_str = ' ';
 	*(psz_str - 1) = ' ';
       }else if(*psz_str == '*'){
-	commentState = CppStyle;
+	commentState = CStyle;
 	*psz_str = ' ';
 	*(psz_str - 1) = ' ';
       }else{
 	commentState = None;
       }
       break;
-    case CStyle:
+    case CppStyle:
       if(*psz_str == '\n'){
 	commentState = None;
       }else{
 	*psz_str = ' ';
       }
       break;      
-    case CppStyle:
+    case CStyle:
       if(*psz_str == '*'){
-	commentState = CppStyleEnd;
+	commentState = CStyleEnd;
       }
       *psz_str = ' ';
       break;
-    case CppStyleEnd:
+    case CStyleEnd:
       if(*psz_str == '/'){
 	commentState = None;
       }else{
-	commentState = CppStyle;
+	commentState = CStyle;
       }
       *psz_str = ' ';
       break;
