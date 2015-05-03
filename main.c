@@ -8,11 +8,11 @@ char test_in[TESTS_COUNT][MAX_STRING] = {"//cpp-style comment \n",
 		      "/*c style comment}*/\n",
 		      "No comments at all",
 		      "/*c // cpp\n comment*//* very hard * comment */\n"};
-char test_out[TESTS_COUNT][MAX_STRING] = {"                    \n",
-		      "                     \n                     ",
-		      "                    \n",
+char test_out[TESTS_COUNT][MAX_STRING] = {"\n",
+		      "\n                     ",
+		      "\n",
 		      "No comments at all",
-		      "                                              \n"};     
+		      "\n"};     
 
 typedef enum CommentState_{
   None,
