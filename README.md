@@ -1,6 +1,6 @@
 # evelopers_cleaner
 
-Comments are replaced with whitespaces
+One character should be reserved for replacement, assuming input as text 0x11 was selected as replace symbol.
 
 Only Unix EOL style is supported
 
