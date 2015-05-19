@@ -119,7 +119,7 @@ void remove_Comments(char *psz_file_in, char *psz_file_out){
       /**Usually just get next chunk from file */
        len = fread(buf_In, 1, sizeof(buf_In), pFile_In);
     }else{
-      /** If we are in SlashFound state, we need to last symbol
+      /** If we are in SlashFound state, we need to save last symbol
        * of prev buffer*/
       buf_In[0] = '/';
       len = 1 + fread(buf_In + 1, 1, sizeof(buf_In) - 1, pFile_In);
