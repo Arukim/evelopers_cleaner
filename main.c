@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define FILESYSTEM_BUF_SIZE 4096
 
 /*Test data*/
 #define TESTS_COUNT 5
@@ -23,87 +27,91 @@ typedef enum CommentState_{
 }CommentState;
 
 /*replace C/Cpp style comments with selected symbol */
-void remove_Comments(char *psz_str){
-  /*sanity check*/
-  if(psz_str == NULL || *psz_str == '\0'){
+void remove_Comments(char *psz_file_in, char *psz_file_out){
+  FILE * pFile_In = fopen(psz_file_in, "r");
+  if(pFile_In == NULL){
     return;
   }
-  char * insert_pos = NULL;
-  CommentState commentState = None;
-  do{
-    switch(commentState){
-    case None:
-      if(*psz_str == '/'){
-	commentState = SlashFound;
-	continue;
-      }
-      break;
-    case SlashFound:
-      if(*psz_str == '/'){
-	commentState = CppStyle;
-	if(insert_pos == NULL){
-	  insert_pos = psz_str - 1;
-	}
-	continue;
-      }else if(*psz_str == '*'){
-	commentState = CStyle;
-	if(insert_pos == NULL){
-	  insert_pos = psz_str - 1;
-	}
-	continue;
-      }else{
-	commentState = None;
-	if(insert_pos != NULL){
-	  *insert_pos = *(psz_str - 1);
-	  insert_pos++;
-	}
-      }
-      break;
-    case CppStyle:
-      if(*psz_str == '\n'){
-	commentState = None;
-      }else{
-	continue;
-      }
-      break;      
-    case CStyle:
-      if(*psz_str == '*'){
-	commentState = CStyleEnd;
-      }
-      continue;
-      break;
-    case CStyleEnd:
-      if(*psz_str == '/'){
-	commentState = None;
-      }else{
-	commentState = CStyle;
-      }
-      continue;
-      break;
-    default:
-      break;
-    }
-    
-    if(insert_pos != NULL){
-      *insert_pos = *psz_str;
-      insert_pos++;
-    }
-  }while(*++psz_str);
 
-  if(insert_pos != NULL){
-    *insert_pos = '\0';
+  FILE * pFile_Out = fopen(psz_file_out, "w");
+  if(pFile_Out == NULL){
+    fclose(pFile_In);
+    return;
   }
+
+  char buf[FILESYSTEM_BUF_SIZE];
+  int len = fread(buf, 1, FILESYSTEM_BUF_SIZE, pFile_In);
+  CommentState commentState = None;
+
+  while(len > 0){
+
+    int i = 0;
+    for(i = 0; i < len; i++){
+      switch(commentState){
+      case None:
+	if(buf[i] == '/'){
+	  commentState = SlashFound;
+	  continue;
+	}
+	break;
+      case SlashFound:
+	if(buf[i] == '/'){
+	  commentState = CppStyle;
+	  continue;
+	}else if(buf[i] == '*'){
+	  commentState = CStyle;
+	  continue;
+	}else{
+	  commentState = None;
+	  fputc(buf[i-1], pFile_Out);
+	}
+	break;
+      case CppStyle:
+	if(buf[i] == '\n'){
+	  commentState = None;
+	}else{
+	  continue;
+	}
+	break;      
+      case CStyle:
+	if(buf[i] == '*'){
+	  commentState = CStyleEnd;
+	}
+	continue;
+	break;
+      case CStyleEnd:
+	if(buf[i] == '/'){
+	  commentState = None;
+	}else{
+	  commentState = CStyle;
+	}
+	continue;
+	break;
+      default:
+	break;
+      }
+    
+      fputc(buf[i], pFile_Out);
+    }
+
+    if(commentState == SlashFound){
+      buf[0] = '/';
+      len = 1 + fread(buf + 1, 1, FILESYSTEM_BUF_SIZE - 1, pFile_In);
+      if(len == 1){
+	fputc('/', pFile_Out);
+	break;
+      }
+    }else{
+      len = fread(buf, 1, FILESYSTEM_BUF_SIZE, pFile_In);
+    }
+  }
+  
+  fclose(pFile_In);
+  fclose(pFile_Out);
 }
 
 int main() {
   int i;
-  for(i=0;i< TESTS_COUNT; i++){
-    remove_Comments(test_in[i]);
-    if(strcmp(test_in[i], test_out[i])==0){
-      printf("Test %d passed\n", i);
-    }else{
-      printf("Test %d failed\n", i);
-    }
-  }
+  remove_Comments("main.c", "main.c~");
   return 0;
 }
