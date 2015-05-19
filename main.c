@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILESYSTEM_BUF_SIZE 4
+#define FILESYSTEM_BUF_SIZE 4096
 
 typedef struct OutputBuffer_{
   char buf[FILESYSTEM_BUF_SIZE];
