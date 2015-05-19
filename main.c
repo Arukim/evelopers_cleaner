@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define FILESYSTEM_BUF_SIZE 4096
 
 /*Test data*/
 #define TESTS_COUNT 5
@@ -35,7 +39,7 @@ void remove_Comments(char *psz_str){
     case None:
       if(*psz_str == '/'){
 	commentState = SlashFound;
-	continue;
+	continue; /**Skip symbol copy */
       }
       break;
     case SlashFound:
@@ -44,15 +48,17 @@ void remove_Comments(char *psz_str){
 	if(insert_pos == NULL){
 	  insert_pos = psz_str - 1;
 	}
-	continue;
+	continue; /**Skip*/
       }else if(*psz_str == '*'){
 	commentState = CStyle;
 	if(insert_pos == NULL){
 	  insert_pos = psz_str - 1;
 	}
-	continue;
+	continue; /**Skip*/
       }else{
 	commentState = None;
+	/**False '/' found, it's not a comment,
+	 write it down*/
 	if(insert_pos != NULL){
 	  *insert_pos = *(psz_str - 1);
 	  insert_pos++;
@@ -63,14 +69,14 @@ void remove_Comments(char *psz_str){
       if(*psz_str == '\n'){
 	commentState = None;
       }else{
-	continue;
+	continue; /**Skip*/
       }
       break;      
     case CStyle:
       if(*psz_str == '*'){
 	commentState = CStyleEnd;
       }
-      continue;
+      continue; /**Skip*/
       break;
     case CStyleEnd:
       if(*psz_str == '/'){
@@ -78,21 +84,54 @@ void remove_Comments(char *psz_str){
       }else{
 	commentState = CStyle;
       }
-      continue;
+      continue; /**Skip*/
       break;
     default:
       break;
     }
     
-    if(insert_pos != NULL){
+    if(insert_pos != NULL){ 
       *insert_pos = *psz_str;
       insert_pos++;
     }
   }while(*++psz_str);
 
+
   if(insert_pos != NULL){
     *insert_pos = '\0';
   }
+}
+
+
+void remove_Comments_File(char *psz_file_in, char *psz_file_out){
+  
+  FILE * pFile_In = fopen(psz_file_in, "r");
+  if(pFile_In == NULL){
+    return;
+  }
+
+  FILE * pFile_Out = fopen(psz_file_out, "w");
+  if(pFile_Out == NULL){
+    fclose(pFile_In);
+    return;
+  }
+
+  char buf_In[FILESYSTEM_BUF_SIZE];
+
+  /**Read first chunk from input */
+  int len = fread(buf_In, 1, sizeof(buf_In) - 1, pFile_In);
+
+  while(len > 0){
+    buf_In[len] = '\0';
+    remove_Comments(buf_In);
+    fwrite(buf_In, 1, strlen(buf_In), pFile_Out);
+    len = fread(buf_In, 1, sizeof(buf_In) - 1, pFile_In);
+  }
+
+  fclose(pFile_In);
+  fclose(pFile_Out);
+
+  return;
 }
 
 int main() {
@@ -105,5 +144,7 @@ int main() {
       printf("Test %d failed\n", i);
     }
   }
+
+  remove_Comments_File("main.c", "main.c~");
   return 0;
 }
