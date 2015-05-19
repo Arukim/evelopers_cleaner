@@ -2,7 +2,7 @@
 
 #define REPLACE_SYM 0x11
 
-//Test data
+/*Test data*/
 #define TESTS_COUNT 5
 #define MAX_STRING 255
 char test_in[TESTS_COUNT][MAX_STRING] = {"//cpp-style comment \n",
@@ -24,10 +24,10 @@ typedef enum CommentState_{
   CStyleEnd
 }CommentState;
 
-// Remove selected symbol from string and shrink it
-// remove "ABCCAA", A => "BCC"
+/* Remove selected symbol from string and shrink it
+   remove "ABCCAA", A => "BCC" */
 void remove_Symbol(char *psz_str, char symbol){
-  //sanity check
+  /* sanity check */
   if(psz_str == NULL || symbol == '\0' || *psz_str == '\0'){
     return;
   }
@@ -50,9 +50,9 @@ void remove_Symbol(char *psz_str, char symbol){
   }
 }
 
-//replace C/Cpp style comments with selected symbol
+/*replace C/Cpp style comments with selected symbol */
 void replace_Comments(char *psz_str, char symbol){
-  //sanity check
+  /*sanity check*/
   if(psz_str == NULL || symbol == '\0' || *psz_str == '\0'){
     return;
   }
